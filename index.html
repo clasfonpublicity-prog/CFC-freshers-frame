@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFI Freshers Service DP Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF3B3B; /* Red from the flyer */
+            --accent: #FFD700; /* Yellow from the flyer */
+            --dark: #61093b;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f2f5;
+            background-image: radial-gradient(#ddd 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Input Section Styling */
+        .controls {
+            background: rgb(255, 223, 82);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            height: fit-content;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-label {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 700;
+            box-sizing: border-box;
+        }
+
+        .file-upload-label:hover {
+            background: #333;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button#downloadBtn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button#downloadBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 59, 59, 0.4);
+        }
+
+        /* Preview Section */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 300px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .footer {
+            margin-top: 50px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Get Your DP</h1>
+        <p class="subtitle">#Strangers&Pilgrims | CFI Unilag</p>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="input-group">
+                <label>Upload Your Photo</label>
+                <div class="file-upload">
+                    <label for="imageUpload" class="file-upload-label">Choose Image...</label>
+                    <input type="file" id="imageUpload" accept="image/*">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label> Name</label>
+                <input type="text" id="firstName" placeholder="e.g. ISRAEL" maxlength="16">
+            </div>
+
+            <button id="downloadBtn">Download DP</button>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+
+    <div class="footer">
+        CFC'26
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const imageUpload = document.getElementById('imageUpload');
+        const firstNameInput = document.getElementById('firstName');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // VARIABLES TO ADJUST POSITION
+        // Based on a standard 1080x1350 aspect ratio guess. 
+        // If your template is different, tweak these numbers!
+        const config = {
+            squareX: 302.44,      // X position of the yellow square
+            squareY: 282.03,      // Y position of the yellow square
+            squareSize: 476.1,   // Width/Height of the square
+            textBarY: 755,     // Y position where the black name bar starts
+            textBarHeight: 90, // Height of the black bar
+            nameY: 850,        // Y position of the First Name text
+            surnameY: 830      // Y position of the Surname text
+        };
+
+        let templateImg = new Image();
+        let userImg = new Image();
+        let isUserImgLoaded = false;
+
+        // Load the template
+        templateImg.src = 'template.png'; 
+        templateImg.onload = () => {
+            // Set canvas size to match template
+            canvas.width = templateImg.width;
+            canvas.height = templateImg.height;
+            draw();
+        };
+
+        // Handle File Upload
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    userImg.onload = () => {
+                        isUserImgLoaded = true;
+                        draw();
+                    };
+                    userImg.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                // Update button text
+                document.querySelector('.file-upload-label').textContent = "Image Selected!";
+            }
+        });
+
+        // Handle Text Input
+        firstNameInput.addEventListener('input', draw);
+
+        function draw() {
+            // 1. Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Draw Template Background
+            ctx.drawImage(templateImg, 0, 0);
+
+            // 3. Draw User Image (Cropped to Square)
+            if (isUserImgLoaded) {
+                // Save context for clipping
+                ctx.save();
+                
+                // Define the clipping region (The square area)
+                ctx.beginPath();
+                ctx.rect(config.squareX, config.squareY, config.squareSize, config.squareSize);
+                ctx.clip();
+
+                // Calculate aspect ratio to cover the square (object-fit: cover)
+                const aspect = userImg.width / userImg.height;
+                let drawW, drawH, drawX, drawY;
+
+                if (aspect > 1) {
+                    // Landscape
+                    drawH = config.squareSize;
+                    drawW = config.squareSize * aspect;
+                    drawX = config.squareX - (drawW - config.squareSize) / 2;
+                    drawY = config.squareY;
+                } else {
+                    // Portrait
+                    drawW = config.squareSize;
+                    drawH = config.squareSize / aspect;
+                    drawX = config.squareX;
+                    drawY = config.squareY - (drawH - config.squareSize) / 2;
+                }
+
+                ctx.drawImage(userImg, drawX, drawY, drawW, drawH);
+                
+                // Restore context (remove clipping)
+                ctx.restore();
+            }
+
+            // 5. Draw Text
+            const fName = firstNameInput.value.toUpperCase() || "NAME";
+
+            ctx.textAlign = "center";
+            
+            // First Name Style
+            ctx.fillStyle = "red";
+            ctx.font = "800 40px Montserrat"; // Adjust size as needed
+            ctx.fillText(fName, config.squareX + config.squareSize / 2, config.nameY);
+
+        }
+
+        // Handle Download
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'CFI_Freshers_DP.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>
